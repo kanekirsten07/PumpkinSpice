@@ -10,6 +10,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Kismet/GameplayStatics.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -58,6 +59,35 @@ void APumpkinSpiceCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+}
+
+//////////////////////////////////////////////////////////////////////////
+void APumpkinSpiceCharacter::OpenLobby()
+{
+	UWorld* World = GetWorld();
+
+	if (World)
+	{
+		World->ServerTravel("/Game/PumpkinSpice/Maps/Lobby");
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+void APumpkinSpiceCharacter::CallOpenLevel(const FString& Address)
+{
+	UGameplayStatics::OpenLevel(this, *Address);
+}
+
+//////////////////////////////////////////////////////////////////////////
+void APumpkinSpiceCharacter::CallClientTravel(const FString& Address)
+{
+	if (UGameInstance* GameInstance = GetGameInstance())
+	{
+		if (APlayerController* PlayerController = GameInstance->GetFirstLocalPlayerController())
+		{
+			PlayerController->ClientTravel(Address, ETravelType::TRAVEL_Absolute);
+		}
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
