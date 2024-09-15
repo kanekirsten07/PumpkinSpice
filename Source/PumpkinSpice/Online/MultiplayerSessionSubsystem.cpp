@@ -2,6 +2,7 @@
 
 
 #include "MultiplayerSessionSubsystem.h"
+#include "Online/OnlineSessionNames.h"
 #include "OnlineSubsystem.h"
 
 UMultiplayerSessionSubsystem::UMultiplayerSessionSubsystem() :
@@ -69,7 +70,7 @@ void UMultiplayerSessionSubsystem::FindSessions(int MaxSearchResults)
 	LastSessionSearch = MakeShareable(new FOnlineSessionSearch());
 	LastSessionSearch->MaxSearchResults = MaxSearchResults;
 	LastSessionSearch->bIsLanQuery = IOnlineSubsystem::Get()->GetSubsystemName() == "NULL" ? true : false;
-	//LastSessionSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
+	LastSessionSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
 
 	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
 
