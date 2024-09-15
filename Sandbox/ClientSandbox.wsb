@@ -1,0 +1,14 @@
+<Configuration>
+    <vGpu>Default</vGpu>
+    <Networking>Enable</Networking>
+    <MappedFolders>
+      <MappedFolder>
+        <HostFolder>S:\PackagedBuilds</HostFolder>
+        <SandboxFolder>C:\Users\WDAGUtilityAccount\Downloads</SandboxFolder>
+        <ReadOnly>true</ReadOnly>
+      </MappedFolder>
+    </MappedFolders>
+    <LogonCommand>
+      <Command>explorer.exe C:\users\WDAGUtilityAccount\Downloads</Command>
+    </LogonCommand>
+</Configuration>
