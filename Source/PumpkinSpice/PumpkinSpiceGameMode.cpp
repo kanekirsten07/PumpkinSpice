@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "PumpkinSpiceGameMode.h"
-#include "PumpkinSpiceCharacter.h"
+#include "Characters/PumpkinSpiceCharacter.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
 #include "UObject/ConstructorHelpers.h"
