@@ -3,8 +3,9 @@
 
 #include "OverheadWidget.h"
 #include "Components/TextBlock.h"
+#include "GameFramework/PlayerState.h"
 
-void UOverheadWidget::SetDisplayText(const FString Text)
+void UOverheadWidget::SetDisplayText(const FString& Text)
 {
 	if (!Text.IsEmpty())
 	{
@@ -12,12 +13,34 @@ void UOverheadWidget::SetDisplayText(const FString Text)
 	}
 }
 
-void UOverheadWidget::ShowPlayerNetRole(APawn* Pawn)
+void UOverheadWidget::ShowPlayerName(APawn* Pawn)
+{
+	APlayerState* PlayerState = Pawn->GetPlayerState<APlayerState>();
+	if (PlayerState)
+	{
+		FString PlayerName = PlayerState->GetPlayerName();
+		SetDisplayText(PlayerName);
+	}
+}
+
+bool UOverheadWidget::IsOtherPlayer(APawn* Pawn)
 {
 	ENetRole LocalRole = Pawn->GetLocalRole();
+
+	if (LocalRole == ENetRole::ROLE_SimulatedProxy)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void UOverheadWidget::ShowPlayerNetRole(APawn* Pawn)
+{
+	ENetRole RemoteRole = Pawn->GetRemoteRole();
 	FString Role;
 
-	switch (LocalRole)
+	switch (RemoteRole)
 	{
 	case ENetRole::ROLE_Authority:
 		Role = FString("Authority");
@@ -33,9 +56,9 @@ void UOverheadWidget::ShowPlayerNetRole(APawn* Pawn)
 		break;
 	}
 
-	FString LocalRoleString = FString::Printf(TEXT("Local Role: %s"), *Role);
+	FString RemoteRoleString = FString::Printf(TEXT("Remote Role: %s"), *Role);
 
-	SetDisplayText(LocalRoleString);
+	SetDisplayText(RemoteRoleString);
 }
 
 void UOverheadWidget::NativeDestruct()

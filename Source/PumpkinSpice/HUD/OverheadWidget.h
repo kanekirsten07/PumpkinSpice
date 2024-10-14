@@ -18,7 +18,13 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* DisplayText;
 
-	void SetDisplayText(const FString Text);
+	void SetDisplayText(const FString& Text);
+
+	UFUNCTION(BlueprintCallable)
+	void ShowPlayerName(APawn* Pawn);
+
+	UFUNCTION(BlueprintCallable)
+	bool IsOtherPlayer(APawn* Pawn);
 
 	UFUNCTION(BlueprintCallable)
 	void ShowPlayerNetRole(APawn* Pawn);
