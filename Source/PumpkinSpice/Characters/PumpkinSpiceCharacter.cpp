@@ -12,6 +12,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
+#include "PumpkinSpice/Weapon/Weapon.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -23,7 +25,7 @@ APumpkinSpiceCharacter::APumpkinSpiceCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-		
+
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -61,6 +63,14 @@ APumpkinSpiceCharacter::APumpkinSpiceCharacter()
 }
 
 //////////////////////////////////////////////////////////////////////////
+void APumpkinSpiceCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(APumpkinSpiceCharacter, OverlappingWeapon, COND_OwnerOnly);
+}
+
+//////////////////////////////////////////////////////////////////////////
 void APumpkinSpiceCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -73,13 +83,35 @@ void APumpkinSpiceCharacter::BeginPlay()
 	Super::BeginPlay();
 }
 
-void APumpkinSpiceCharacter::JumpOrDodge()
+void APumpkinSpiceCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 {
-	//Jump If Not moving
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickupWidget(false);
+	}
 
-	Super::Jump();
+	OverlappingWeapon = Weapon;
 
-	//Dodge If Moving
+	if (IsLocallyControlled())
+	{
+		if (OverlappingWeapon)
+		{
+			OverlappingWeapon->ShowPickupWidget(true);
+		}
+	}
+}
+
+void APumpkinSpiceCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
+{
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickupWidget(true);
+	}
+
+	if (LastWeapon)
+	{
+		LastWeapon->ShowPickupWidget(false);
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -95,11 +127,11 @@ void APumpkinSpiceCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
-	
+
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-		
-		// Jumping
+
+		// Jumping or Dodge, duck, dip, dive, and dodge....ing
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ThisClass::JumpOrDodge);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
@@ -128,7 +160,7 @@ void APumpkinSpiceCharacter::Move(const FInputActionValue& Value)
 
 		// get forward vector
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	
+
 		// get right vector 
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
@@ -149,4 +181,13 @@ void APumpkinSpiceCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void APumpkinSpiceCharacter::JumpOrDodge()
+{
+	//Jump If Not moving
+
+	Super::Jump();
+
+	//Dodge If Moving
 }
