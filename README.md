@@ -9,7 +9,7 @@ This should generate the files you need to open the project through Visual Studi
 
 ## Running In Steam
 
-To run Project nutmeg as a steam client, you need to do a couple of things. 
+To run Project PumpkinSpice as a steam client, you need to do a couple of things. 
 
 1. ensure that steam is open on your machine and you are logged into your steam account
 2. load up the editor
@@ -17,7 +17,7 @@ To run Project nutmeg as a steam client, you need to do a couple of things.
 4. select 'Standalone Game' 
 
 The editor will then launch a client into the 3rd person level. If you open Steam, you'll notice that the active game you're playing is
-'SpaceWar'. This means that Nutmeg is connected to Steam
+'SpaceWar'. This means that PumpkinSpice is connected to Steam
 
 ## Testing Multiplayer
 
