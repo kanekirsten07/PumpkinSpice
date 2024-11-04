@@ -14,6 +14,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "PumpkinSpice/Weapon/Weapon.h"
+#include "PumpkinSpice/Components/CombatComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -60,6 +61,19 @@ APumpkinSpiceCharacter::APumpkinSpiceCharacter()
 
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
 	OverheadWidget->SetupAttachment(RootComponent);
+
+	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
+	CombatComponent->SetIsReplicated(true);
+}
+
+void APumpkinSpiceCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	if (CombatComponent)
+	{
+		CombatComponent->Character = this;
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -101,6 +115,7 @@ void APumpkinSpiceCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////
 void APumpkinSpiceCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 {
 	if (OverlappingWeapon)
@@ -111,6 +126,15 @@ void APumpkinSpiceCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 	if (LastWeapon)
 	{
 		LastWeapon->ShowPickupWidget(false);
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+void APumpkinSpiceCharacter::ServerEquipButtonPressed_Implementation()
+{
+	if (CombatComponent)
+	{
+		CombatComponent->EquipWeapon(OverlappingWeapon);
 	}
 }
 
@@ -132,7 +156,7 @@ void APumpkinSpiceCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
 
 		// Jumping or Dodge, duck, dip, dive, and dodge....ing
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ThisClass::JumpOrDodge);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &APumpkinSpiceCharacter::JumpOrDodge);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
 		// Moving
@@ -140,6 +164,9 @@ void APumpkinSpiceCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APumpkinSpiceCharacter::Look);
+
+		// Equipping
+		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Triggered, this, &APumpkinSpiceCharacter::Equip);
 	}
 	else
 	{
@@ -183,10 +210,25 @@ void APumpkinSpiceCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
+void APumpkinSpiceCharacter::Equip(const FInputActionValue& Value)
+{
+	if (CombatComponent)
+	{
+		if (HasAuthority())
+		{
+			CombatComponent->EquipWeapon(OverlappingWeapon);
+		}
+		else
+		{
+			ServerEquipButtonPressed();
+		}
+	}
+}
+
 void APumpkinSpiceCharacter::JumpOrDodge()
 {
 	//Jump If Not moving
-
+	UE_LOG(LogTemplateCharacter, Log, TEXT("Jump/Dodge pressed"));
 	Super::Jump();
 
 	//Dodge If Moving
