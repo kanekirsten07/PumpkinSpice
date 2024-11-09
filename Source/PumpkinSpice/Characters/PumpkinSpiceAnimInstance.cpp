@@ -2,6 +2,7 @@
 
 
 #include "PumpkinSpiceAnimInstance.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "PumpkinSpiceCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -30,4 +31,17 @@ void UPumpkinSpiceAnimInstance::NativeUpdateAnimation(float DeltaTime)
 
 	bIsInAir = PSCharacter->GetCharacterMovement()->IsFalling();
 	bIsAccelerating = PSCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f ? true : false;
+
+	bWeaponEquipped = PSCharacter->IsWeaponEquipped();
+	bIsCrouched = PSCharacter->bIsCrouched;
+	bAiming = PSCharacter->IsAiming();
+
+	//Offset yaw for strafing
+	FRotator AimRotation = PSCharacter->GetBaseAimRotation();
+	FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(PSCharacter->GetVelocity());
+	YawOffset = UKismetMathLibrary::NormalizedDeltaRotator(MovementRotation, AimRotation).Yaw;
+	
+	//UE_LOG(LogTemp, Log, TEXT("Yaw Offset %f"), YawOffset);
+	//UE_LOG(LogTemp, Log, TEXT("Lean %f"), Lean);
+	
 }

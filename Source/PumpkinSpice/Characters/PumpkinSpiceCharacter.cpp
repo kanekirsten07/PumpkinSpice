@@ -44,6 +44,7 @@ APumpkinSpiceCharacter::APumpkinSpiceCharacter()
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -97,6 +98,7 @@ void APumpkinSpiceCharacter::BeginPlay()
 	Super::BeginPlay();
 }
 
+//////////////////////////////////////////////////////////////////////////
 void APumpkinSpiceCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 {
 	if (OverlappingWeapon)
@@ -113,6 +115,24 @@ void APumpkinSpiceCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 			OverlappingWeapon->ShowPickupWidget(true);
 		}
 	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+bool APumpkinSpiceCharacter::IsWeaponEquipped()
+{
+	return (CombatComponent && CombatComponent->EquippedWeapon);
+}
+
+//////////////////////////////////////////////////////////////////////////
+bool APumpkinSpiceCharacter::IsAiming()
+{
+	return (CombatComponent && CombatComponent->bAiming);
+}
+
+bool APumpkinSpiceCharacter::IsDancing()
+{
+	// :< 
+	return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -167,6 +187,21 @@ void APumpkinSpiceCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 
 		// Equipping
 		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Triggered, this, &APumpkinSpiceCharacter::Equip);
+
+		//Crouching
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &APumpkinSpiceCharacter::OnCrouchPressed);
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &APumpkinSpiceCharacter::OnCrouchPressed);
+
+		//Sprint
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &APumpkinSpiceCharacter::OnSprintPressed);
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &APumpkinSpiceCharacter::OnSprintPressed);
+
+		//Aiming
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &APumpkinSpiceCharacter::OnAimPressed);
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &APumpkinSpiceCharacter::OnAimReleased);
+
+		//Got me Dancing
+		EnhancedInputComponent->BindAction(DanceAction, ETriggerEvent::Triggered, this, &APumpkinSpiceCharacter::Dance);
 	}
 	else
 	{
@@ -188,7 +223,7 @@ void APumpkinSpiceCharacter::Move(const FInputActionValue& Value)
 		// get forward vector
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 
-		// get right vector 
+		//// get right vector 
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
 		// add movement 
@@ -225,11 +260,83 @@ void APumpkinSpiceCharacter::Equip(const FInputActionValue& Value)
 	}
 }
 
-void APumpkinSpiceCharacter::JumpOrDodge()
+void APumpkinSpiceCharacter::OnCrouchPressed(const FInputActionValue& Value)
 {
-	//Jump If Not moving
-	UE_LOG(LogTemplateCharacter, Log, TEXT("Jump/Dodge pressed"));
-	Super::Jump();
+	if (bIsCrouched)
+	{
+		Super::UnCrouch(false);
+	}
+	else
+	{
+		Super::Crouch(false);
+	}
+}
 
-	//Dodge If Moving
+void APumpkinSpiceCharacter::OnSprintPressed(const FInputActionValue& Value)
+{
+
+}
+
+void APumpkinSpiceCharacter::Dance(const FInputActionValue& Value)
+{
+
+}
+
+void APumpkinSpiceCharacter::OnAimPressed()
+{
+	if (CombatComponent)
+	{
+		CombatComponent->SetAiming(true);
+	}
+}
+
+void APumpkinSpiceCharacter::OnAimReleased()
+{
+	if (CombatComponent)
+	{
+		CombatComponent->SetAiming(false);
+	}
+}
+
+void APumpkinSpiceCharacter::JumpOrDodge(const FInputActionValue& Value)
+{
+	UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
+	if (!MovementComponent)
+	{
+		return;
+	}
+
+	bool bIsMoving = MovementComponent->GetCurrentAcceleration().Size() > 0.f ? true : false;
+	
+	if (bIsMoving)
+	{
+		// find out which way is forward
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+		// get forward vector
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		// get right vector 
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		
+
+
+		TSharedPtr<FRootMotionSource_ConstantForce> ConstantForce = MakeShared<FRootMotionSource_ConstantForce>();
+		ConstantForce->AccumulateMode = ERootMotionAccumulateMode::Additive;
+		ConstantForce->Priority = 5;
+		//ConstantForce->StrengthOverTime = 1000.0f;
+		ConstantForce->Force = ForwardDirection* 1000;
+		ConstantForce->Duration = 0.4f;
+		ConstantForce->FinishVelocityParams.Mode = ERootMotionFinishVelocityMode::MaintainLastRootMotionVelocity;
+		ConstantForce->FinishVelocityParams.SetVelocity = FVector(0.0, 0.0, 0.0);
+		ConstantForce->FinishVelocityParams.ClampVelocity = 0.f;
+		
+		//Dodge
+		MovementComponent->ApplyRootMotionSource(ConstantForce);
+	}
+	else
+	{
+		//Jump
+		Super::Jump();
+	}
 }
