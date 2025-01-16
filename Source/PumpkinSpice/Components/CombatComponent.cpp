@@ -14,13 +14,19 @@ UCombatComponent::UCombatComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	SetIsReplicatedByDefault(true);
+
+	BaseWalkSpeed = 300.f;
+	AimWalkSpeed = 250.f;
 }
 
 //////////////////////////////////////////////////////////////////////////
 void UCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	if (Character)
+	{
+		Character->GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -28,6 +34,11 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 {
 	bAiming = bIsAiming;
 	ServerSetAiming(bIsAiming);
+
+	if (Character)
+	{
+		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
