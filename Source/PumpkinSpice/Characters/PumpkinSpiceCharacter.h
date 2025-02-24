@@ -16,7 +16,7 @@ struct FInputActionValue;
 class AWeapon;
 class UCombatComponent;
 
-DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPumpkinSpiceCharacter, Log, All);
 
 UCLASS(config=Game)
 class APumpkinSpiceCharacter : public ACharacter

@@ -17,7 +17,7 @@
 #include "PumpkinSpice/Components/CombatComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
-DEFINE_LOG_CATEGORY(LogTemplateCharacter);
+DEFINE_LOG_CATEGORY(LogPumpkinSpiceCharacter);
 
 //////////////////////////////////////////////////////////////////////////
 // APumpkinSpiceCharacter
@@ -211,7 +211,7 @@ void APumpkinSpiceCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 	}
 	else
 	{
-		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+		UE_LOG(LogPumpkinSpiceCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
 }
 
@@ -228,13 +228,11 @@ void APumpkinSpiceCharacter::Move(const FInputActionValue& Value)
 
 		// get forward vector
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-
-		//UE_LOG(LogTemp, Log, TEXT("Forward Direction %f"), ForwardDirection.X);
+		auto foo = ForwardDirection * MovementVector.Y;
 
 		// get right vector 
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-		//UE_LOG(LogTemp, Log, TEXT("Right Direction %f"), RightDirection.Y);
+		auto bar = RightDirection * MovementVector.X;
 
 		// add movement 
 		AddMovementInput(ForwardDirection, MovementVector.Y);
@@ -297,6 +295,8 @@ void APumpkinSpiceCharacter::OnAimPressed()
 	if (CombatComponent)
 	{
 		CombatComponent->SetAiming(true);
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+		bUseControllerRotationYaw = true;
 	}
 }
 
@@ -305,6 +305,8 @@ void APumpkinSpiceCharacter::OnAimReleased()
 	if (CombatComponent)
 	{
 		CombatComponent->SetAiming(false);
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+		bUseControllerRotationYaw = false;
 	}
 }
 
@@ -328,7 +330,6 @@ void APumpkinSpiceCharacter::AimOffset(float DeltaTime)
 	FRotator CurrentAimRotation = FRotator(GetBaseAimRotation().Pitch, 0.F, 0.f);
 	AO_Pitch = CurrentAimRotation.Pitch;
 	
-	UE_LOG(LogTemp, Log, TEXT("AO Yaw Rotation %f"), AO_Pitch);
 }
 
 void APumpkinSpiceCharacter::JumpOrDodge(const FInputActionValue& Value)
@@ -341,37 +342,34 @@ void APumpkinSpiceCharacter::JumpOrDodge(const FInputActionValue& Value)
 
 	bool bIsMoving = MovementComponent->GetCurrentAcceleration().Size() > 0.f ? true : false;
 	
-	if (bIsMoving && IsWeaponEquipped())
+	if (IsWeaponEquipped())
 	{
 		//Start Dodging base off of direction being held
+		FVector MovementVector = GetActorRotation().Vector();
+		int MovementOffset = 1;
+
+		if (!IsAiming())
+		{
+			// Start dodging based off of character actor rotation
+			MovementVector = GetActorRotation().Vector();
+			// if we're not moving, amplify movement
+			MovementOffset = 1000;
+		}
+		else
+		{
+			MovementVector = MovementComponent->GetCurrentAcceleration();
+		}
 		
-		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		UE_LOG(LogTemp, Log, TEXT("Yaw Rotation %f"), YawRotation.Yaw);
-
-		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-		// get right vector 
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
 		TSharedPtr<FRootMotionSource_ConstantForce> ConstantForce = MakeShared<FRootMotionSource_ConstantForce>();
 		ConstantForce->AccumulateMode = ERootMotionAccumulateMode::Additive;
 		ConstantForce->Priority = 5;
-		//ConstantForce->StrengthOverTime = 1000.0f;
-		ConstantForce->Force = ForwardDirection* 1000;
-		ConstantForce->Duration = 0.4f;
+		ConstantForce->Force = MovementVector * MovementOffset;
+		ConstantForce->Duration = 0.1f;
 		ConstantForce->FinishVelocityParams.Mode = ERootMotionFinishVelocityMode::MaintainLastRootMotionVelocity;
 		ConstantForce->FinishVelocityParams.SetVelocity = FVector(0.0, 0.0, 0.0);
 		ConstantForce->FinishVelocityParams.ClampVelocity = 0.f;
 		
 		//Dodge
 		MovementComponent->ApplyRootMotionSource(ConstantForce);
-	}
-	else
-	{
-		//Jump
-		Super::Jump();
 	}
 }
