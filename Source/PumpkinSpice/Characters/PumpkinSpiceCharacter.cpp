@@ -330,6 +330,14 @@ void APumpkinSpiceCharacter::AimOffset(float DeltaTime)
 	FRotator CurrentAimRotation = FRotator(GetBaseAimRotation().Pitch, 0.F, 0.f);
 	AO_Pitch = CurrentAimRotation.Pitch;
 	
+	// correct for netcode clamping on server-controlled actors
+	if (AO_Pitch > 90.f && !IsLocallyControlled())
+	{
+		FVector2D InRange(270.f, 360.f);
+		FVector2D OutRange(-90.f, 0.f);
+
+		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
+	}
 }
 
 void APumpkinSpiceCharacter::JumpOrDodge(const FInputActionValue& Value)
