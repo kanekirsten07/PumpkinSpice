@@ -95,6 +95,8 @@ protected:
 
 	void OnAimPressed();
 	void OnAimReleased();
+
+	void AimOffset(float DeltaTime);
 	
 	// To add mapping context
 	virtual void BeginPlay();
@@ -110,6 +112,8 @@ public:
 	bool IsAiming();
 
 	bool IsDancing();
+
+	FORCEINLINE float GetAimOffsetPitch() const { return AO_Pitch; }
 
 private:
 
@@ -127,5 +131,8 @@ private:
 
 	UFUNCTION(Server, Reliable)
 	void ServerEquipButtonPressed();
+
+	float AO_Pitch;
+	FRotator StartingAimRotation;
 };
 

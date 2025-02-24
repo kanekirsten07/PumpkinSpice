@@ -15,6 +15,7 @@
 #include "Net/UnrealNetwork.h"
 #include "PumpkinSpice/Weapon/Weapon.h"
 #include "PumpkinSpice/Components/CombatComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -65,6 +66,9 @@ APumpkinSpiceCharacter::APumpkinSpiceCharacter()
 
 	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	CombatComponent->SetIsReplicated(true);
+
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 }
 
 void APumpkinSpiceCharacter::PostInitializeComponents()
@@ -89,6 +93,8 @@ void APumpkinSpiceCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 void APumpkinSpiceCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	AimOffset(DeltaTime);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -223,8 +229,12 @@ void APumpkinSpiceCharacter::Move(const FInputActionValue& Value)
 		// get forward vector
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 
-		//// get right vector 
+		//UE_LOG(LogTemp, Log, TEXT("Forward Direction %f"), ForwardDirection.X);
+
+		// get right vector 
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+		//UE_LOG(LogTemp, Log, TEXT("Right Direction %f"), RightDirection.Y);
 
 		// add movement 
 		AddMovementInput(ForwardDirection, MovementVector.Y);
@@ -298,6 +308,29 @@ void APumpkinSpiceCharacter::OnAimReleased()
 	}
 }
 
+void APumpkinSpiceCharacter::AimOffset(float DeltaTime)
+{
+	if (CombatComponent && CombatComponent->EquippedWeapon == nullptr)
+	{
+		return;
+	}
+
+	if (!IsAiming())
+	{
+		AO_Pitch = 0.f;
+	}
+
+	FVector Velocity = GetVelocity();
+	Velocity.Z = 0.f;
+
+	float Speed = Velocity.Size();
+
+	FRotator CurrentAimRotation = FRotator(GetBaseAimRotation().Pitch, 0.F, 0.f);
+	AO_Pitch = CurrentAimRotation.Pitch;
+	
+	UE_LOG(LogTemp, Log, TEXT("AO Yaw Rotation %f"), AO_Pitch);
+}
+
 void APumpkinSpiceCharacter::JumpOrDodge(const FInputActionValue& Value)
 {
 	UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
@@ -308,18 +341,20 @@ void APumpkinSpiceCharacter::JumpOrDodge(const FInputActionValue& Value)
 
 	bool bIsMoving = MovementComponent->GetCurrentAcceleration().Size() > 0.f ? true : false;
 	
-	if (bIsMoving)
+	if (bIsMoving && IsWeaponEquipped())
 	{
+		//Start Dodging base off of direction being held
+		
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+		UE_LOG(LogTemp, Log, TEXT("Yaw Rotation %f"), YawRotation.Yaw);
 
 		// get forward vector
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		// get right vector 
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-		
-
 
 		TSharedPtr<FRootMotionSource_ConstantForce> ConstantForce = MakeShared<FRootMotionSource_ConstantForce>();
 		ConstantForce->AccumulateMode = ERootMotionAccumulateMode::Additive;

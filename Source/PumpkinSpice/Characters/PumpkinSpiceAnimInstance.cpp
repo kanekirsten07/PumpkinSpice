@@ -40,8 +40,9 @@ void UPumpkinSpiceAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	FRotator AimRotation = PSCharacter->GetBaseAimRotation();
 	FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(PSCharacter->GetVelocity());
 	YawOffset = UKismetMathLibrary::NormalizedDeltaRotator(MovementRotation, AimRotation).Yaw;
+
+	AO_Pitch = PSCharacter->GetAimOffsetPitch();
 	
 	//UE_LOG(LogTemp, Log, TEXT("Yaw Offset %f"), YawOffset);
-	//UE_LOG(LogTemp, Log, TEXT("Lean %f"), Lean);
 	
 }
