@@ -110,7 +110,7 @@ public:
 	bool IsWeaponEquipped();
 
 	bool IsAiming();
-
+	bool IsDodging();
 	bool IsDancing();
 
 	FORCEINLINE float GetAimOffsetPitch() const { return AO_Pitch; }
