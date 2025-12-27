@@ -69,6 +69,9 @@ APumpkinSpiceCharacter::APumpkinSpiceCharacter()
 
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+
+	NetUpdateFrequency = 66.f;
+	MinNetUpdateFrequency = 33.f;
 }
 
 void APumpkinSpiceCharacter::PostInitializeComponents()
@@ -133,6 +136,12 @@ bool APumpkinSpiceCharacter::IsWeaponEquipped()
 bool APumpkinSpiceCharacter::IsAiming()
 {
 	return (CombatComponent && CombatComponent->bAiming);
+}
+
+bool APumpkinSpiceCharacter::IsDodging()
+{
+	// TODO: Implement
+	return false;
 }
 
 bool APumpkinSpiceCharacter::IsDancing()
