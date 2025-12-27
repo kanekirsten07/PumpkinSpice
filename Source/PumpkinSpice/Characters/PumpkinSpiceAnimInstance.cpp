@@ -5,6 +5,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "PumpkinSpiceCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "PumpkinSpice/Weapon/Weapon.h"
 
 void UPumpkinSpiceAnimInstance::NativeInitializeAnimation()
 {
@@ -33,6 +34,7 @@ void UPumpkinSpiceAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	bIsAccelerating = PSCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f ? true : false;
 
 	bWeaponEquipped = PSCharacter->IsWeaponEquipped();
+	EquippedWeapon = PSCharacter->GetEquippedWeapon();
 	bIsCrouched = PSCharacter->bIsCrouched;
 	bAiming = PSCharacter->IsAiming();
 
@@ -43,6 +45,14 @@ void UPumpkinSpiceAnimInstance::NativeUpdateAnimation(float DeltaTime)
 
 	AO_Pitch = PSCharacter->GetAimOffsetPitch();
 	
-	//UE_LOG(LogTemp, Log, TEXT("Yaw Offset %f"), YawOffset);
+	if (bWeaponEquipped && EquippedWeapon && EquippedWeapon->GetWeaponMesh() && PSCharacter->GetMesh())
+	{
+		LeftHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("LeftHandSocket"), ERelativeTransformSpace::RTS_World);
+		FVector OutPosition;
+		FRotator OutRotation;
+		PSCharacter->GetMesh()->TransformToBoneSpace(FName("hand_r"), LeftHandTransform.GetLocation(), FRotator::ZeroRotator, OutPosition, OutRotation);
+		LeftHandTransform.SetLocation(OutPosition);
+		LeftHandTransform.SetRotation(FQuat(OutRotation));
+	}
 	
 }

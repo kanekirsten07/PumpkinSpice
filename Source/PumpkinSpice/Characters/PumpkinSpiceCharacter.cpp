@@ -142,6 +142,17 @@ bool APumpkinSpiceCharacter::IsDancing()
 }
 
 //////////////////////////////////////////////////////////////////////////
+AWeapon* APumpkinSpiceCharacter::GetEquippedWeapon()
+{
+	if (CombatComponent)
+	{
+		return CombatComponent->EquippedWeapon;
+	}
+
+	return nullptr;
+}
+
+//////////////////////////////////////////////////////////////////////////
 void APumpkinSpiceCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 {
 	if (OverlappingWeapon)

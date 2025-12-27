@@ -114,6 +114,7 @@ public:
 	bool IsDancing();
 
 	FORCEINLINE float GetAimOffsetPitch() const { return AO_Pitch; }
+	AWeapon* GetEquippedWeapon();
 
 private:
 
