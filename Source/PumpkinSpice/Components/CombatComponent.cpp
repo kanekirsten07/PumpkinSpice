@@ -57,6 +57,16 @@ void UCombatComponent::OnRep_EquippedWeapon()
 	}
 }
 
+void UCombatComponent::FireButtonPressed(bool bPressed)
+{
+	bFireButtonPressed = bPressed;
+	if (Character && bFireButtonPressed)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Playing a nim"));
+		Character->PlayFireMontage();
+	}
+}
+
 //////////////////////////////////////////////////////////////////////////
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {

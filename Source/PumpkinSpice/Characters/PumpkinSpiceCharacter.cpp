@@ -16,6 +16,7 @@
 #include "PumpkinSpice/Weapon/Weapon.h"
 #include "PumpkinSpice/Components/CombatComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "PumpkinSpiceAnimInstance.h"
 
 DEFINE_LOG_CATEGORY(LogPumpkinSpiceCharacter);
 
@@ -81,6 +82,18 @@ void APumpkinSpiceCharacter::PostInitializeComponents()
 	if (CombatComponent)
 	{
 		CombatComponent->Character = this;
+	}
+}
+
+void APumpkinSpiceCharacter::PlayFireMontage()
+{
+	if (CombatComponent && CombatComponent->EquippedWeapon != nullptr)
+	{
+		UAnimInstance* PSAnimInstance = GetMesh()->GetAnimInstance();
+		if (PSAnimInstance && FireWeaponMontage)
+		{
+			PSAnimInstance->Montage_Play(FireWeaponMontage);
+		}
 	}
 }
 
@@ -222,6 +235,10 @@ void APumpkinSpiceCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 
 		//Got me Dancing
 		EnhancedInputComponent->BindAction(DanceAction, ETriggerEvent::Triggered, this, &APumpkinSpiceCharacter::OnDancePressed);
+
+		// Shoosting
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &APumpkinSpiceCharacter::OnFirePressed);
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &APumpkinSpiceCharacter::OnFireReleased);
 	}
 	else
 	{
@@ -295,9 +312,26 @@ void APumpkinSpiceCharacter::OnCrouchPressed(const FInputActionValue& Value)
 	}
 }
 
-void APumpkinSpiceCharacter::OnFireClicked(const FInputActionValue& Value)
+void APumpkinSpiceCharacter::OnFirePressed(const FInputActionValue& Value)
 {
+	if (CombatComponent)
+	{
+		CombatComponent->FireButtonPressed(true);
+	}
+}
 
+void APumpkinSpiceCharacter::OnFireReleased(const FInputActionValue& Value)
+{
+	if (CombatComponent)
+	{
+		CombatComponent->FireButtonPressed(false);
+	}
+
+	UAnimInstance* PSAnimInstance = GetMesh()->GetAnimInstance();
+	if (PSAnimInstance && FireWeaponMontage)
+	{
+		PSAnimInstance->StopAllMontages(0.f);
+	}
 }
 
 void APumpkinSpiceCharacter::OnSprintPressed(const FInputActionValue& Value)

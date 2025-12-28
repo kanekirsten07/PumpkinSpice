@@ -74,6 +74,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
+	void PlayFireMontage();
 
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -92,7 +93,8 @@ protected:
 
 	void OnCrouchPressed(const FInputActionValue& Value);
 
-	void OnFireClicked(const FInputActionValue& Value);
+	void OnFirePressed(const FInputActionValue& Value);
+	void OnFireReleased(const FInputActionValue& Value);
 
 	void OnSprintPressed(const FInputActionValue& Value);
 	void OnDancePressed(const FInputActionValue& Value) { bIsDancing = true; }
@@ -141,5 +143,8 @@ private:
 
 	float AO_Pitch;
 	FRotator StartingAimRotation;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	class UAnimMontage* FireWeaponMontage;
 };
 
