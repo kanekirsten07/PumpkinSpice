@@ -227,7 +227,7 @@ void APumpkinSpiceCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 
 		//Sprint
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &APumpkinSpiceCharacter::OnSprintPressed);
-		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &APumpkinSpiceCharacter::OnSprintPressed);
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &APumpkinSpiceCharacter::OnSprintReleased);
 
 		//Aiming
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &APumpkinSpiceCharacter::OnAimPressed);
@@ -260,11 +260,9 @@ void APumpkinSpiceCharacter::Move(const FInputActionValue& Value)
 
 		// get forward vector
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-		auto foo = ForwardDirection * MovementVector.Y;
 
 		// get right vector 
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-		auto bar = RightDirection * MovementVector.X;
 
 		// add movement 
 		AddMovementInput(ForwardDirection, MovementVector.Y);
@@ -336,7 +334,14 @@ void APumpkinSpiceCharacter::OnFireReleased(const FInputActionValue& Value)
 
 void APumpkinSpiceCharacter::OnSprintPressed(const FInputActionValue& Value)
 {
+	bIsSprinting = true;
+	GetCharacterMovement()->MaxWalkSpeed = 1000.f;
+}
 
+void APumpkinSpiceCharacter::OnSprintReleased(const FInputActionValue& Value)
+{
+	bIsSprinting = false;
+	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 }
 
 void APumpkinSpiceCharacter::OnAimPressed()

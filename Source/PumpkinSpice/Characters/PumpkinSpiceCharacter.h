@@ -97,6 +97,7 @@ protected:
 	void OnFireReleased(const FInputActionValue& Value);
 
 	void OnSprintPressed(const FInputActionValue& Value);
+	void OnSprintReleased(const FInputActionValue& Value);
 	void OnDancePressed(const FInputActionValue& Value) { bIsDancing = true; }
 
 	void OnAimPressed();
@@ -110,8 +111,6 @@ protected:
 	void JumpOrDodge(const FInputActionValue& Value);
 
 public:
-	UPROPERTY(BlueprintReadOnly, Category=Character)
-	bool bIsDancing = false;
 	
 	void SetOverlappingWeapon(AWeapon* Weapon);
 
@@ -119,7 +118,8 @@ public:
 
 	bool IsAiming();
 	bool IsDodging();
-	FORCEINLINE bool IsDancing() const { return bIsDancing; };
+	bool IsDancing() const { return bIsDancing; };
+	bool IsSprinting() const { return bIsSprinting; };
 
 	FORCEINLINE float GetAimOffsetPitch() const { return AO_Pitch; }
 	AWeapon* GetEquippedWeapon();
@@ -146,5 +146,8 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	class UAnimMontage* FireWeaponMontage;
+
+	bool bIsDancing = false;
+	bool bIsSprinting = false;
 };
 

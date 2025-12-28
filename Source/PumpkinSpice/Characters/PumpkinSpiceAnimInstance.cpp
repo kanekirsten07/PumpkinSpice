@@ -38,6 +38,7 @@ void UPumpkinSpiceAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	bIsCrouched = PSCharacter->bIsCrouched;
 	bAiming = PSCharacter->IsAiming();
 	bIsDancing = PSCharacter->IsDancing();
+	bIsSprinting = PSCharacter->IsSprinting();
 
 	//Offset yaw for strafing
 	FRotator AimRotation = PSCharacter->GetBaseAimRotation();
