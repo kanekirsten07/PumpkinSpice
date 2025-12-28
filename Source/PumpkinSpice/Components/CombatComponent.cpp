@@ -62,7 +62,6 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 	bFireButtonPressed = bPressed;
 	if (Character && bFireButtonPressed)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Playing a nim"));
 		Character->PlayFireMontage();
 	}
 }
