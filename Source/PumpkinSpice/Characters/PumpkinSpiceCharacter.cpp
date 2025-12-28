@@ -157,6 +157,16 @@ bool APumpkinSpiceCharacter::IsDodging()
 	return false;
 }
 
+bool APumpkinSpiceCharacter::IsDancing()
+{
+	return (CombatComponent && CombatComponent->bDancing);
+}
+
+bool APumpkinSpiceCharacter::IsSprinting()
+{
+	return (CombatComponent && CombatComponent->bSprinting);
+}
+
 //////////////////////////////////////////////////////////////////////////
 AWeapon* APumpkinSpiceCharacter::GetEquippedWeapon()
 {
@@ -249,6 +259,11 @@ void APumpkinSpiceCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 void APumpkinSpiceCharacter::Move(const FInputActionValue& Value)
 {
 	bIsDancing = false;
+
+	if (CombatComponent)
+	{
+		CombatComponent->SetDancing(false);
+	}
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
@@ -335,13 +350,34 @@ void APumpkinSpiceCharacter::OnFireReleased(const FInputActionValue& Value)
 void APumpkinSpiceCharacter::OnSprintPressed(const FInputActionValue& Value)
 {
 	bIsSprinting = true;
+	bIsDancing = false;
 	GetCharacterMovement()->MaxWalkSpeed = 1000.f;
+
+	if (CombatComponent)
+	{
+		CombatComponent->SetSprinting(true);
+		CombatComponent->SetDancing(false);
+	}
 }
 
 void APumpkinSpiceCharacter::OnSprintReleased(const FInputActionValue& Value)
 {
 	bIsSprinting = false;
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
+	if (CombatComponent)
+	{
+		CombatComponent->SetSprinting(false);
+	}
+}
+
+void APumpkinSpiceCharacter::OnDancePressed(const FInputActionValue& Value)
+{
+	bIsDancing = true;
+
+	if (CombatComponent)
+	{
+		CombatComponent->SetDancing(true);
+	}
 }
 
 void APumpkinSpiceCharacter::OnAimPressed()

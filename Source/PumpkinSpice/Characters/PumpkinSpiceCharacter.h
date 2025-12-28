@@ -98,7 +98,7 @@ protected:
 
 	void OnSprintPressed(const FInputActionValue& Value);
 	void OnSprintReleased(const FInputActionValue& Value);
-	void OnDancePressed(const FInputActionValue& Value) { bIsDancing = true; }
+	void OnDancePressed(const FInputActionValue& Value);
 
 	void OnAimPressed();
 	void OnAimReleased();
@@ -118,8 +118,8 @@ public:
 
 	bool IsAiming();
 	bool IsDodging();
-	bool IsDancing() const { return bIsDancing; };
-	bool IsSprinting() const { return bIsSprinting; };
+	bool IsDancing();
+	bool IsSprinting();
 
 	FORCEINLINE float GetAimOffsetPitch() const { return AO_Pitch; }
 	AWeapon* GetEquippedWeapon();

@@ -32,10 +32,26 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void ServerSetAiming(bool bIsAiming);
 
+	void SetSprinting(bool bIsSprinting);
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetSprinting(bool bIsSprinting);
+
+	void SetDancing(bool bIsDancing);
+
+	UFUNCTION(Server, Unreliable)
+	void ServerSetDancing(bool bIsDancing);
+
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
 
 	void FireButtonPressed(bool bPressed);
+
+	UFUNCTION(Server, Reliable)
+	void ServerFire();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastFire();
 
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
@@ -44,12 +60,21 @@ private:
 
 	UPROPERTY(Replicated)
 	bool bAiming;
+	
+	UPROPERTY(Replicated)
+	bool bSprinting;
+
+	UPROPERTY(Replicated)
+	bool bDancing;
 
 	UPROPERTY(EditAnywhere)
 	float BaseWalkSpeed;
 
 	UPROPERTY(EditAnywhere)
-	float AimWalkSpeed;
+	float AimWalkSpeed; 
+	
+	UPROPERTY(EditAnywhere)
+	float SprintSpeed;
 
 	bool bFireButtonPressed = false;
 };

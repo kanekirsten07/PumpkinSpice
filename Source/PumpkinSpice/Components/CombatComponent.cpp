@@ -15,8 +15,20 @@ UCombatComponent::UCombatComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	SetIsReplicatedByDefault(true);
 
-	BaseWalkSpeed = 300.f;
+	BaseWalkSpeed = 500.f;
 	AimWalkSpeed = 250.f;
+	SprintSpeed = 1000.f;
+}
+
+//////////////////////////////////////////////////////////////////////////
+void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
+	DOREPLIFETIME(UCombatComponent, bAiming)
+	DOREPLIFETIME(UCombatComponent, bSprinting)
+	DOREPLIFETIME(UCombatComponent, bDancing)
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -47,6 +59,33 @@ void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
 	bAiming = bIsAiming;
 }
 
+void UCombatComponent::SetSprinting(bool bIsSprinting)
+{
+	bSprinting = bIsSprinting;
+	ServerSetSprinting(bIsSprinting);
+
+	if (Character)
+	{
+		Character->GetCharacterMovement()->MaxWalkSpeed = bIsSprinting ? SprintSpeed : BaseWalkSpeed;
+	}
+}
+
+void UCombatComponent::ServerSetSprinting_Implementation(bool bIsSprinting)
+{
+	bSprinting = bIsSprinting;
+}
+
+void UCombatComponent::SetDancing(bool bIsDancing)
+{
+	bDancing = bIsDancing;
+	ServerSetDancing(bIsDancing);
+}
+
+void UCombatComponent::ServerSetDancing_Implementation(bool bIsDancing)
+{
+	bDancing = bIsDancing;
+}
+
 //////////////////////////////////////////////////////////////////////////
 void UCombatComponent::OnRep_EquippedWeapon()
 {
@@ -60,9 +99,27 @@ void UCombatComponent::OnRep_EquippedWeapon()
 void UCombatComponent::FireButtonPressed(bool bPressed)
 {
 	bFireButtonPressed = bPressed;
-	if (Character && bFireButtonPressed)
+
+	if (bFireButtonPressed)
+	{
+		ServerFire();
+	}
+}
+
+void UCombatComponent::ServerFire_Implementation()
+{
+	MulticastFire();
+}
+
+void UCombatComponent::MulticastFire_Implementation()
+{
+	if (Character)
 	{
 		Character->PlayFireMontage();
+		if (EquippedWeapon)
+		{
+			EquippedWeapon->Fire(false);
+		}
 	}
 }
 
@@ -70,16 +127,6 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-}
-
-//////////////////////////////////////////////////////////////////////////
-void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
-	DOREPLIFETIME(UCombatComponent, bAiming)
 }
 
 //////////////////////////////////////////////////////////////////////////
