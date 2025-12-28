@@ -5,18 +5,26 @@
 #include "Online/OnlineSessionNames.h"
 #include "OnlineSubsystem.h"
 
-UMultiplayerSessionSubsystem::UMultiplayerSessionSubsystem() :
-	CreateSessionCompleteDelegate(FOnCreateSessionCompleteDelegate::CreateUObject(this, &UMultiplayerSessionSubsystem::OnCreateSessionComplete)),
-	FindSessionsCompleteDelegate(FOnFindSessionsCompleteDelegate::CreateUObject(this, &UMultiplayerSessionSubsystem::OnFindSessionsComplete)),
-	JoinSessionCompleteDelegate(FOnJoinSessionCompleteDelegate::CreateUObject(this, &UMultiplayerSessionSubsystem::OnJoinSessionComplete)),
-	DestroySessionCompleteDelegate(FOnDestroySessionCompleteDelegate::CreateUObject(this, &UMultiplayerSessionSubsystem::OnDestroySessionComplete)),
-	StartSessionCompleteDelegate(FOnStartSessionCompleteDelegate::CreateUObject(this, &UMultiplayerSessionSubsystem::OnStartSessionComplete))
+void UMultiplayerSessionSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
+	CreateSessionCompleteDelegate = FOnCreateSessionCompleteDelegate::CreateUObject(this, &UMultiplayerSessionSubsystem::OnCreateSessionComplete);
+	FindSessionsCompleteDelegate = FOnFindSessionsCompleteDelegate::CreateUObject(this, &UMultiplayerSessionSubsystem::OnFindSessionsComplete);
+	JoinSessionCompleteDelegate = FOnJoinSessionCompleteDelegate::CreateUObject(this, &UMultiplayerSessionSubsystem::OnJoinSessionComplete);
+	DestroySessionCompleteDelegate = FOnDestroySessionCompleteDelegate::CreateUObject(this, &UMultiplayerSessionSubsystem::OnDestroySessionComplete);
+	StartSessionCompleteDelegate = FOnStartSessionCompleteDelegate::CreateUObject(this, &UMultiplayerSessionSubsystem::OnStartSessionComplete);
 	IOnlineSubsystem* OnlineSubystem = IOnlineSubsystem::Get();
 
 	if (OnlineSubystem)
 	{
 		SessionInterface = OnlineSubystem->GetSessionInterface();
+	}
+}
+
+void UMultiplayerSessionSubsystem::Deinitialize()
+{
+	if (SessionInterface)
+	{
+		SessionInterface.Reset();
 	}
 }
 

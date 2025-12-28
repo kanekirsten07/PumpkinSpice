@@ -20,7 +20,9 @@ class PUMPKINSPICE_API UMultiplayerSessionSubsystem : public UGameInstanceSubsys
 	GENERATED_BODY()
 
 public:
-	UMultiplayerSessionSubsystem();
+
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+	virtual void Deinitialize() override;
 
 	void CreateSession(int32 NumPublicConnections, FString MatchType);
 	void FindSessions(int MaxSearchResults);
