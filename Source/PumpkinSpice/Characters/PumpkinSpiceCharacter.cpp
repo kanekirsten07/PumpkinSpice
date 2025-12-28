@@ -144,12 +144,6 @@ bool APumpkinSpiceCharacter::IsDodging()
 	return false;
 }
 
-bool APumpkinSpiceCharacter::IsDancing()
-{
-	// :< 
-	return false;
-}
-
 //////////////////////////////////////////////////////////////////////////
 AWeapon* APumpkinSpiceCharacter::GetEquippedWeapon()
 {
@@ -227,7 +221,7 @@ void APumpkinSpiceCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &APumpkinSpiceCharacter::OnAimReleased);
 
 		//Got me Dancing
-		EnhancedInputComponent->BindAction(DanceAction, ETriggerEvent::Triggered, this, &APumpkinSpiceCharacter::Dance);
+		EnhancedInputComponent->BindAction(DanceAction, ETriggerEvent::Triggered, this, &APumpkinSpiceCharacter::OnDancePressed);
 	}
 	else
 	{
@@ -237,6 +231,7 @@ void APumpkinSpiceCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 
 void APumpkinSpiceCharacter::Move(const FInputActionValue& Value)
 {
+	bIsDancing = false;
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
@@ -300,12 +295,12 @@ void APumpkinSpiceCharacter::OnCrouchPressed(const FInputActionValue& Value)
 	}
 }
 
-void APumpkinSpiceCharacter::OnSprintPressed(const FInputActionValue& Value)
+void APumpkinSpiceCharacter::OnFireClicked(const FInputActionValue& Value)
 {
 
 }
 
-void APumpkinSpiceCharacter::Dance(const FInputActionValue& Value)
+void APumpkinSpiceCharacter::OnSprintPressed(const FInputActionValue& Value)
 {
 
 }

@@ -65,6 +65,9 @@ class APumpkinSpiceCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* DanceAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* FireAction; 
+
 public:
 	APumpkinSpiceCharacter();
 	virtual void Tick(float DeltaTime) override;
@@ -89,9 +92,10 @@ protected:
 
 	void OnCrouchPressed(const FInputActionValue& Value);
 
-	void OnSprintPressed(const FInputActionValue& Value);
+	void OnFireClicked(const FInputActionValue& Value);
 
-	void Dance(const FInputActionValue& Value);
+	void OnSprintPressed(const FInputActionValue& Value);
+	void OnDancePressed(const FInputActionValue& Value) { bIsDancing = true; }
 
 	void OnAimPressed();
 	void OnAimReleased();
@@ -104,6 +108,8 @@ protected:
 	void JumpOrDodge(const FInputActionValue& Value);
 
 public:
+	UPROPERTY(BlueprintReadOnly, Category=Character)
+	bool bIsDancing = false;
 	
 	void SetOverlappingWeapon(AWeapon* Weapon);
 
@@ -111,7 +117,7 @@ public:
 
 	bool IsAiming();
 	bool IsDodging();
-	bool IsDancing();
+	FORCEINLINE bool IsDancing() const { return bIsDancing; };
 
 	FORCEINLINE float GetAimOffsetPitch() const { return AO_Pitch; }
 	AWeapon* GetEquippedWeapon();
