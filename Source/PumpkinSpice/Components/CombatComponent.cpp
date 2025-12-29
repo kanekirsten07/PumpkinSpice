@@ -10,6 +10,8 @@
 #include "PumpkinSpice/Characters/PumpkinSpiceCharacter.h"
 #include "PumpkinSpice/Weapon/Weapon.h"
 #include "Kismet/GameplayStatics.h"
+#include "PumpkinSpice/PlayerController/PumpkinSpicePlayerController.h"
+#include "PumpkinSpice/HUD/PumpkinSpiceHUD.h"
 
 // Sets default values for this component's properties
 UCombatComponent::UCombatComponent()
@@ -40,6 +42,43 @@ void UCombatComponent::BeginPlay()
 	if (Character)
 	{
 		Character->GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	SetHUDCrosshairs(DeltaTime);
+}
+
+void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
+{
+	if (Character == nullptr || Character->Controller == nullptr) return;
+
+	PlayerController = PlayerController == nullptr ? Cast<APumpkinSpicePlayerController>(Character->Controller) : PlayerController;
+	if (PlayerController)
+	{
+		HUD = HUD == nullptr ? Cast<APumpkinSpiceHUD>(PlayerController->GetHUD()) : HUD;
+		FHUDPackage HUDPackage;
+		if (EquippedWeapon)
+		{
+			HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
+			HUDPackage.CrosshairsLeft = EquippedWeapon->CrosshairsLeft;
+			HUDPackage.CrosshairsRight = EquippedWeapon->CrosshairsRight;
+			HUDPackage.CrosshairsTop = EquippedWeapon->CrosshairsTop;
+			HUDPackage.CrosshairsBottom = EquippedWeapon->CrosshairsBottom;
+		}
+		else
+		{
+			
+			HUDPackage.CrosshairsCenter = nullptr;
+			HUDPackage.CrosshairsLeft = nullptr;
+			HUDPackage.CrosshairsRight = nullptr;
+			HUDPackage.CrosshairsTop = nullptr;
+			HUDPackage.CrosshairsBottom = nullptr;
+		}
+		HUD->SetHUDPackage(HUDPackage);
 	}
 }
 
@@ -158,12 +197,6 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 			DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint, 12.f, 12, FColor::Red);
 		}*/
 	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
 //////////////////////////////////////////////////////////////////////////

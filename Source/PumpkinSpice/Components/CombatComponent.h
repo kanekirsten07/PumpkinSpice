@@ -8,6 +8,8 @@
 
 class APumpkinSpiceCharacter;
 class AWeapon;
+class APumpkinSpicePlayerController;
+class APumpkinSpiceHUD;
 
 #define TRACE_LENGTH = 80000.f
 
@@ -57,10 +59,14 @@ protected:
 
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
 
+	void SetHUDCrosshairs(float DeltaTime);
+
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 	AWeapon* EquippedWeapon;
 	APumpkinSpiceCharacter* Character;
+	APumpkinSpicePlayerController* PlayerController;
+	APumpkinSpiceHUD* HUD;
 
 	UPROPERTY(Replicated)
 	bool bAiming;
